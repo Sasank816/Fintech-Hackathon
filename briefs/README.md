@@ -15,6 +15,17 @@ There is one brief per person. Pick yours, open Claude Code in this repo, and pa
 - **Never commit `.env`.** Copy `.env.example` (Agent 1 adds it) and fill in your own keys. Test mode only: `sk_test_…`.
 - **Feature freeze 20:10 · rehearse 20:15 · record 20:30 · submit by 20:45.**
 
+## Integration hooks (from Agent 1; the skeleton is live)
+- `build_ctx` imports `clause.billing`, `clause.collections`, `clause.mail`, `clause.inbox` and `clause.desk` when they exist. If your module defines **`register(ctx)`**, it is called right away; register your approval actions there with `ctx.register_action("billing.interest", fn)`.
+- If your module defines **`startup(ctx)`**, the app calls it once, in a thread, after the event loop exists. Start pollers there as daemon threads.
+- If `clause.billing` or `clause.mail` defines **`router`**, the app mounts it.
+- **`mail.send_invoice_email`** takes exactly the keyword arguments of `send_customer_email` (minus `ctx`). `billing.raise_invoice` takes exactly the keyword arguments of `raise_invoice`.
+- Extra context helpers beyond the contract:
+  - `ctx.improve_later(customer, feedback)` and `ctx.forget(customer)`;
+  - `ctx.update_decision(id, **fields)`, which re-emits the decision;
+  - `ctx.memory_log` holds the memory events the UI shows. Memory ops made through `ctx` are logged and emitted automatically.
+- Smoke test: `python -m uvicorn clause.app:app --port 8000`, then open http://localhost:8000/api/state.
+
 ## Already in the repo (written, not yet run)
 - `clause/law.py`: UK late-payment interest maths, verified against the demo numbers.
 - `clause/policy.py` + `POLICY.md`: credit-control policy CC-1…CC-8.

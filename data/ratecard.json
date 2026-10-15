@@ -1,0 +1,12 @@
+{
+  "version": "2026-10",
+  "business": "Hollis Electrical Ltd",
+  "currency": "gbp",
+  "items": [
+    {"code": "LAB", "label": "Labour", "unit": "hour", "unit_pence": 6000},
+    {"code": "CALL", "label": "Call-out", "unit": "visit", "unit_pence": 4500},
+    {"code": "RCD", "label": "RCD unit supplied and fitted", "unit": "unit", "unit_pence": 3800},
+    {"code": "EICR", "label": "Electrical installation condition report", "unit": "report", "unit_pence": 18000},
+    {"code": "LED", "label": "LED panel supplied and fitted", "unit": "panel", "unit_pence": 5500}
+  ]
+}

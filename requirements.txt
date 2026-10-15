@@ -1,0 +1,10 @@
+fastapi==0.143.2
+uvicorn[standard]==0.54.0
+stripe==16.0.0
+anthropic==1.14.0
+python-dotenv==1.2.4
+sse-starlette==3.5.0
+httpx==0.28.1
+pytest==9.1.1
+# Only the integrator machine and Agent 3 need Cognee (heavy install); everyone else runs MEMORY_BACKEND=local
+cognee==1.6.4
