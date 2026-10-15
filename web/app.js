@@ -4,6 +4,7 @@
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const md = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/^#+\s*/gm, "");
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const money = (p) => "£" + (Number(p || 0) / 100).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const toDate = (iso) => new Date(String(iso).slice(0, 10) + "T12:00:00Z");
@@ -367,7 +368,7 @@ async function askWhy(question, customer) {
   try {
     const res = await api("POST", "/api/why", { question, customer });
     const mem = (res.memory || []).slice(0, 4);
-    out.innerHTML = `<div class="d-section"><h3>Answer</h3><div class="answer">${esc(res.answer)}</div>
+    out.innerHTML = `<div class="d-section"><h3>Answer</h3><div class="answer">${md(res.answer)}</div>
       ${mem.length ? `<h3 style="margin-top:14px">Recalled from ${S.modes.memory === "cognee" ? "Cognee" : "memory"}</h3>${mem.map((m) => `<div class="quote">${esc(typeof m === "string" ? m : m.text)}</div>`).join("")}` : ""}</div>`;
   } catch (err) {
     out.innerHTML = `<div class="d-section"><div class="answer" style="background:var(--red-bg);color:var(--red)">${esc(err.message)}</div></div>`;
@@ -409,7 +410,7 @@ async function sendChat(message, mode = "text") {
 function showReply(el, res) {
   el.classList.remove("wait");
   const rows = (res.invoice_ids || []).map((id) => S.invoices.get(id)).filter(Boolean).map((inv) => `<div style="margin-top:10px">${invoiceTile(inv).replace(/data-key="[^"]*"/, "")}</div>`).join("");
-  el.innerHTML = esc(res.reply) + rows;
+  el.innerHTML = md(res.reply) + rows;
 }
 
 function showError(el, err) {
@@ -528,7 +529,7 @@ function onEvent(type, data) {
     }
     case "memory": S.memory.push(data); if (S.memory.length > 300) S.memory.shift(); break;
     case "clock": S.clock = data.clock_date; break;
-    case "chat": if (S.pendingChat === 0) addMsg("agent", esc(data.text)); break;
+    case "chat": if (S.pendingChat === 0) addMsg("agent", md(data.text)); break;
     case "toast": if (!/paid/i.test(data.text || "")) toast(data.text, data.level === "error" ? "error" : "info"); break;
     default: return;
   }
