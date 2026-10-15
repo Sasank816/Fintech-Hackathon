@@ -19,6 +19,7 @@ from decimal import Decimal
 
 from clause import billing, law, mail, policy
 from clause.billing import money
+from clause.llm import check_draft
 
 log = logging.getLogger("clause.collections")
 
@@ -53,10 +54,11 @@ def _once(ctx, key: str) -> bool:
 
 def _standing(ctx, inv: dict, cust: dict, today: date):
     promise = inv.get("promise_date")
+    chases = [(int(c["stage"]), date.fromisoformat(c["sent_on"])) for c in inv.get("chases", []) if c.get("sent_on")]
     return policy.InvoiceStanding(
-        today=today, due=date.fromisoformat(inv["due_date"]), remaining_pence=inv["remaining_pence"],
-        disputed=bool(inv.get("disputed")), promise_date=date.fromisoformat(promise) if promise else None,
-        chases_sent=len(inv.get("chases", [])), interest_claimed=bool(inv.get("interest_claimed")),
+        today=today, due=date.fromisoformat(inv["due_date"]), amount_remaining_pence=inv["remaining_pence"],
+        disputed=bool(inv.get("disputed")), promise_date=date.fromisoformat(promise[:10]) if promise else None,
+        chases_sent=chases, interest_claimed=bool(inv.get("interest_claimed")),
         key_account=bool(cust.get("key_account")))
 
 
@@ -99,7 +101,7 @@ def _chase_email(ctx, facts: dict, allowed: set[int], must: list[str]) -> tuple[
     for attempt in range(2):
         try:
             d = ctx.llm.draft_email(facts)
-            if _check_ok(ctx.llm.check_draft(d, allowed_pence=allowed, must_include=must)):
+            if _check_ok(check_draft(d, allowed_pence=allowed, must_include=must)):
                 return _subject_body(d)
             log.info("draft failed check (attempt %d)", attempt + 1)
         except Exception as e:
@@ -111,7 +113,7 @@ def _chase_email(ctx, facts: dict, allowed: set[int], must: list[str]) -> tuple[
 
 
 def _do_chase(ctx, inv, cust, today, standing, out: list) -> None:
-    res = policy.next_chase(standing)
+    res, stage = policy.next_chase(standing)  # (Verdict, stage days or None)
     oc = _oc(res)
     if oc == "none":
         return
@@ -135,7 +137,8 @@ def _do_chase(ctx, inv, cust, today, standing, out: list) -> None:
         notice = (f"If this remains unpaid we will claim late-payment charges of {money(claim.total_pence)} "
                   f"({claim.formula()}).")
     facts = {
-        "kind": "chase", "stage": str(getattr(res, "stage", len(inv.get("chases", [])) + 1)),
+        "kind": "chase", "stage": str(stage),
+        "stage_label": {1: "friendly reminder", 14: "firm reminder", 30: "final notice"}.get(stage, "reminder"),
         "customer_name": cust["name"], "business_name": getattr(ctx.settings, "business_name", "Hollis Electrical Ltd"),
         "invoice_number": inv["number"], "amount_due": money(inv["remaining_pence"]),
         "due_date": due.strftime("%d %b %Y"), "days_overdue": days_over, "pay_url": inv["hosted_invoice_url"],

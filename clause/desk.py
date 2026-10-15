@@ -386,7 +386,7 @@ def answer(ctx: Ctx, question: str, customer: str | None = None) -> dict[str, An
     numbers = [i["number"] for i in invoices if i.get("number") and i["number"].lower() in question.lower()]
 
     def score(d: dict[str, Any]) -> int:
-        blob = json.dumps(d, default=str)
+        blob = json.dumps(d, default=str, ensure_ascii=False)  # keep "£" literal so amounts match
         s = 0
         s += sum(3 for p in wanted if money(p) in blob)
         s += sum(3 for n in numbers if n in blob)

@@ -18,10 +18,12 @@ BRIGHT = "pay@brightbakery.test"
 def ctx():
     c = build_ctx(Settings(), fake=True)
     c.store.set_meta("clock_date", "2026-11-20")
-    c.store.put("customer", "acme", {"name": "Acme Paper Ltd", "email": ACME, "aliases": [], "terms_days": 30,
-                                     "key_account": False, "contract_rate_over_base": None})
-    c.store.put("customer", "bright", {"name": "Bright Bakery Co", "email": BRIGHT, "aliases": [], "terms_days": 30,
-                                       "key_account": False, "contract_rate_over_base": None})
+    clock = c.gateway.create_clock(frozen_time=1_792_065_600, name="test")  # 2026-10-15 12:00 UTC
+    for key, name, email in (("acme", "Acme Paper Ltd", ACME), ("bright", "Bright Bakery Co", BRIGHT)):
+        cus = c.gateway.create_customer(name=name, email=email, clock_id=clock, metadata={}, idempotency_key=key)
+        c.store.put("customer", key, {"name": name, "email": email, "aliases": [], "terms_days": 30,
+                                      "key_account": False, "contract_rate_over_base": None,
+                                      "stripe_customer_id": cus, "clock_id": clock})
     return c
 
 

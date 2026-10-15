@@ -43,14 +43,18 @@ def test_fourth_customer_goes_on_new_clock(ctx):
 
 def test_pay_marks_paid_and_records_decision_once(ctx):
     inv = _inv(ctx, "acme")[0]
+    events = ctx.bus.subscribe()
     ctx.gateway.pay_invoice(inv["id"])
     billing.sync_invoice(ctx, inv["id"])
     billing.sync_invoice(ctx, inv["id"])  # poll after webhook: must not double-record
     assert ctx.store.get("invoice", inv["id"])["status"] == "paid"
     pays = _decisions(ctx, action="payment_received", customer="acme")
     assert len(pays) == 1 and pays[0]["clauses"] == ["CC-2"] and pays[0]["outcome"] == "none"
-    assert any("Paid" in m[3] and "after 0 chases" in m[3] for m in ctx.mem)
-    assert any(e == "toast" for e, _ in ctx.events)
+    assert any("Paid" in n and "after 0 chases" in n for n in ctx.memory.notes.get("acme", []))
+    seen = []
+    while not events.empty():
+        seen.append(events.get_nowait()["event"])
+    assert "toast" in seen
 
 
 def test_webhook_replay_processed_once(ctx):
