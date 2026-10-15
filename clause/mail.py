@@ -112,6 +112,7 @@ class GmailMailer:
         message_id = make_msgid(domain=self.address.split("@")[-1])
         msg["Message-ID"] = message_id
         msg.set_content(body)
+        msg.add_alternative(email_html(subject, body, self.from_name or self.address), subtype="html")
         for filename, data, mimetype in attachments:
             maintype, _, subtype = mimetype.partition("/")
             msg.add_attachment(data, maintype=maintype, subtype=subtype or "octet-stream", filename=filename)
@@ -330,3 +331,55 @@ def api_forget(customer: str) -> dict[str, Any]:
     ctx = _require_ctx()
     ctx.forget(customer)
     return {"ok": True}
+
+
+# ---- branded HTML (voiz style; the plain text above stays as the fallback) ---------------------
+import html as _html
+import re as _re
+
+_URL = _re.compile(r"https?://[^\s<>\"]+")
+_MONEY = _re.compile(r"(£[0-9][0-9,]*\.[0-9]{2})")
+
+
+def _inline(text: str) -> str:
+    out = _html.escape(text)
+    out = _MONEY.sub(r"<strong>\1</strong>", out)
+    return _URL.sub(lambda m: f'<a href="{m.group(0)}" style="color:#00794A">{m.group(0)}</a>', out)
+
+
+def email_html(subject: str, body: str, sender: str) -> str:
+    pay_url = next((u for u in _URL.findall(body) if "stripe.com" in u), "")
+    button = (f"<p style='margin:18px 0 6px'><a href='{pay_url}' style='display:inline-block;background:#39FF88;color:#0B0B0F;"
+              f"text-decoration:none;font-weight:600;font-size:15px;padding:12px 22px;border-radius:999px'>Pay securely online</a></p>"
+              f"<p style='margin:0 0 8px;font-size:12px;color:#6B6B78'>Secure payment by Stripe · test mode</p>") if pay_url else ""
+    blocks, rows = [], []
+    for raw in body.splitlines():
+        line = raw.rstrip()
+        if line.strip().startswith("- "):
+            item = line.strip()[2:]
+            desc, _, amt = item.rpartition(": ")
+            rows.append((desc or item, amt if desc else ""))
+            continue
+        if rows:
+            blocks.append("<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='margin:4px 0 12px'>"
+                          + "".join(f"<tr><td style='padding:10px 12px;background:#F5F5F7;border-radius:10px;font-size:14px;color:#4A4A55'>{_html.escape(d)}</td>"
+                                    f"<td style='padding:10px 12px;background:#F5F5F7;border-radius:10px;font-size:14px;font-weight:600;text-align:right;white-space:nowrap'>{_html.escape(a)}</td></tr>"
+                                    f"<tr><td colspan='2' style='height:4px'></td></tr>" for d, a in rows)
+                          + "</table>")
+            rows = []
+        if not line.strip():
+            blocks.append("")
+        elif pay_url and pay_url in line:
+            blocks.append(button)
+        else:
+            blocks.append(f"<p style='margin:0 0 10px;font-size:15px;line-height:1.55;color:#0B0B0F'>{_inline(line)}</p>")
+    return f"""<!doctype html><html><body style="margin:0;padding:24px 12px;background:#F5F5F7;font-family:Inter,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#FFFFFF;border-radius:20px;overflow:hidden">
+<tr><td style="height:8px;background:#39FF88;background-image:linear-gradient(90deg,#B6FF3B,#39FF88,#00E0C6)"></td></tr>
+<tr><td style="padding:22px 28px 6px"><span style="font-size:26px;font-weight:800;letter-spacing:-1px;color:#0B0B0F">voiz</span>
+<span style="font-size:13px;color:#6B6B78;margin-left:8px">for {_html.escape(sender)}</span></td></tr>
+<tr><td style="padding:10px 28px 4px"><div style="font-size:18px;font-weight:600;color:#0B0B0F;margin:0 0 14px">{_html.escape(subject)}</div>
+{"".join(blocks)}</td></tr>
+<tr><td style="padding:16px 28px 22px;border-top:1px solid #EBEBF0;font-size:12px;color:#6B6B78">Sent by voiz, the accounts assistant, on behalf of {_html.escape(sender)}. Every charge follows the written credit policy; reply to this email with any question.</td></tr>
+</table></td></tr></table></body></html>"""

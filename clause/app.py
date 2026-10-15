@@ -34,8 +34,8 @@ def check_llm(ctx: Ctx) -> None:
 
     try:
         client.models.retrieve(ctx.llm.model)
-    except anthropic.AuthenticationError:
-        log.error("ANTHROPIC_API_KEY was rejected (401). Put a working key in .env. Falling back to FakeLLM.")
+    except (anthropic.AuthenticationError, anthropic.PermissionDeniedError, anthropic.BadRequestError) as exc:
+        log.error("ANTHROPIC_API_KEY was rejected (%s). Put a working key in .env. Falling back to FakeLLM.", exc)
         ctx.llm = FakeLLM(name="fake (Anthropic key rejected)")
     except Exception as exc:
         log.warning("could not verify the Anthropic key/model %s: %s", ctx.llm.model, exc)

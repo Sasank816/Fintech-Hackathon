@@ -130,7 +130,11 @@ class ClaudeLLM:
     def __init__(self, api_key: str, model: str = "claude-opus-5-5"):
         import anthropic
 
-        self.client = anthropic.Anthropic(api_key=api_key, max_retries=3, timeout=90)
+        import os
+
+        workspace = os.environ.get("ANTHROPIC_WORKSPACE_ID", "").strip()  # needed only for user-level (sk-ant-usr) keys
+        self.client = anthropic.Anthropic(api_key=api_key, max_retries=3, timeout=90,
+                                          default_headers={"anthropic-workspace-id": workspace} if workspace else None)
         self.model = model
         self.name = model
         self._fallbacks = True

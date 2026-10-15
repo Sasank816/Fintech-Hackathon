@@ -237,7 +237,7 @@ def build_ctx(settings: Settings, *, fake: bool = False) -> Ctx:
         if not fake and settings.mail_mode == "gmail" and not gmail_ready:
             log.warning("MAIL_MODE=gmail but GMAIL_ADDRESS / GMAIL_APP_PASSWORD missing: using the outbox")
         if not fake and settings.mail_mode == "gmail" and gmail_ready and hasattr(mail, "GmailMailer"):
-            mailer = mail.GmailMailer(settings.gmail_address, settings.gmail_app_password)
+            mailer = mail.GmailMailer(settings.gmail_address, settings.gmail_app_password, from_name=settings.business_name)
         elif hasattr(mail, "OutboxMailer"):
             mailer = mail.OutboxMailer()
     except ImportError as exc:

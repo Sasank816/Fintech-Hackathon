@@ -391,6 +391,8 @@ def answer(ctx: Ctx, question: str, customer: str | None = None) -> dict[str, An
         s += sum(3 for p in wanted if money(p) in blob)
         s += sum(3 for n in numbers if n in blob)
         s += 1 if d.get("actor") != "human" else 0
+        s += 2 if d.get("calc") else 0  # decisions that carry maths explain a charge best
+        s -= 2 if d.get("action") == "payment_received" else 0
         return s
 
     decisions = [d for d in ctx.store.all("decision") if not key or d.get("customer") == key]

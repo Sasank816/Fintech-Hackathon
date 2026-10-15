@@ -77,6 +77,19 @@ function load(state) {
   for (const e of state.emails || []) S.mail.set("in:" + e.id, { ...e, direction: "in" });
   for (const o of state.outbox || []) S.mail.set("out:" + o.id, { ...o, direction: "out" });
   S.memory = (state.memory_events || []).slice();
+  if (S.scenario === "demo") S.step = Math.max(S.step || 0, demoProgress());
+}
+
+/* How far the one-customer demo has got, read from the data (survives a page reload). */
+function demoProgress() {
+  const mine = [...S.invoices.values()].filter((i) => i.customer === FOCUS);
+  const work = mine.filter((i) => (i.kind || "work") === "work");
+  if (!work.length) return 0;
+  const interest = mine.some((i) => i.kind === "interest");
+  if (!interest && !work.some(isOverdue)) return 1;
+  if (!work.some((i) => i.promise_date)) return 2;
+  if (mine.some((i) => i.status === "open")) return 3;
+  return 4;
 }
 
 /* ---------------- demo focus: one customer, start to finish ---------------- */
@@ -243,7 +256,7 @@ function renderMemory() {
 }
 
 function renderSelects() {
-  const opts = [...S.customers.values()].map((c) => `<option value="${esc(c.id)}" data-email="${esc(c.email)}">${esc(c.name)}</option>`).join("");
+  const opts = [...S.customers.values()].filter((c) => inFocus(c.id)).map((c) => `<option value="${esc(c.id)}" data-email="${esc(c.email)}">${esc(c.name)}</option>`).join("");
   for (const sel of [$("#inject-from"), $("#ask-cust")]) {
     if (sel.dataset.sig === opts) continue;
     const keep = sel.value;
