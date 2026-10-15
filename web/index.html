@@ -3,108 +3,119 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Clause · Accounts receivable</title>
+  <title>VOIZ · Accounts receivable</title>
   <link rel="preload" href="fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6' fill='%2339FF88'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230B0B0F'/><text x='16' y='23' text-anchor='middle' font-family='Inter,Segoe UI,Arial' font-weight='800' font-size='21' fill='%2339FF88'>v</text></svg>">
 </head>
 <body>
+<div class="ribbon" aria-hidden="true"></div>
 <div class="app">
-  <header class="top">
-    <div class="frame">
-      <div class="brand"><span class="dot"></span>Clause</div>
-      <div class="business" id="business">Hollis Electrical Ltd</div>
-      <span class="pill-test" title="Every pound moves in Stripe test mode">Test mode</span>
-      <div class="modes" id="modes"></div>
-      <div class="spacer"></div>
-      <div class="clock">
-        <div>
-          <div class="clock-label">Stripe test clock</div>
-          <div class="clock-date" id="clock">—</div>
-        </div>
-        <button class="btn btn-sm" data-advance="15">+15 days</button>
-        <button class="btn btn-sm" data-advance="30">+30 days</button>
-        <button class="btn btn-sm btn-primary" data-advance="45">+45 days</button>
-      </div>
-      <button class="btn btn-sm btn-ghost" id="poll">Check inbox</button>
-      <button class="btn btn-sm btn-ghost" id="reset">Reset</button>
+  <header class="bar">
+    <div class="brand"><span class="wordmark" aria-label="VOIZ">voiz</span><span class="biz" id="business"></span></div>
+    <div class="grow"></div>
+    <span class="test" title="Every pound moves in Stripe test mode">Test mode</span>
+    <div class="clock-pill" title="Stripe Test Clock: simulated date"><small>Today</small><span id="clock">—</span></div>
+    <button class="icon-btn" id="menu-btn" aria-haspopup="menu" aria-expanded="false" aria-label="More">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+    </button>
+    <div class="menu" id="menu" role="menu" hidden>
+      <button role="menuitem" id="m-inbox">Check inbox now</button>
+      <button role="menuitem" data-advance="15">Skip ahead 15 days</button>
+      <button role="menuitem" data-advance="30">Skip ahead 30 days</button>
+      <button role="menuitem" id="m-reset">Reset demo</button>
+      <div class="status" id="status"></div>
     </div>
-    <div class="progress" id="progress"></div>
   </header>
 
-  <section class="hero">
-    <div class="ribbon"></div>
-    <div class="frame">
-      <h1 class="headline"><b>Invoices from the work.</b> <span>Chases, charges statutory interest and explains every pound, on its own, inside your policy.</span></h1>
-      <div class="kpis">
-        <div class="kpi" id="kpi-outstanding"><div class="kpi-label"><i style="background:var(--blue-text)"></i>Outstanding</div><div class="kpi-value">£0.00</div></div>
-        <div class="kpi" id="kpi-overdue"><div class="kpi-label"><i style="background:var(--red-text)"></i>Overdue</div><div class="kpi-value">£0.00</div></div>
-        <div class="kpi" id="kpi-collected"><div class="kpi-label"><i style="background:var(--neon)"></i>Collected</div><div class="kpi-value">£0.00</div></div>
-        <div class="kpi" id="kpi-interest"><div class="kpi-label"><i style="background:var(--amber-text)"></i>Interest claimed</div><div class="kpi-value">£0.00</div></div>
-      </div>
+  <section class="hero" aria-label="Summary">
+    <div>
+      <div class="hero-label">Outstanding</div>
+      <div class="hero-value" id="kpi-outstanding">£0.00</div>
+    </div>
+    <div class="stats">
+      <div><div class="stat-label"><i style="background:var(--red)"></i>Overdue</div><div class="stat-value" id="kpi-overdue">£0.00</div></div>
+      <div><div class="stat-label"><i style="background:var(--neon)"></i>Collected</div><div class="stat-value" id="kpi-collected">£0.00</div></div>
+      <div><div class="stat-label"><i style="background:var(--amber)"></i>Interest claimed</div><div class="stat-value" id="kpi-interest">£0.00</div></div>
+    </div>
+    <div class="actions">
+      <button class="act primary" id="act-voice"><span class="act-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg></span>Voice note</button>
+      <button class="act" id="act-email"><span class="act-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>Customer email</button>
+      <button class="act" data-advance="45"><span class="act-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 7 6-7 6zM13 6l7 6-7 6z"/></svg></span>+45 days</button>
     </div>
   </section>
 
-  <main class="main">
-    <div class="frame">
-      <section class="col">
-        <div class="col-head"><span class="col-title">Desk</span><span class="col-sub">Say or type the work. Ask anything.</span></div>
-        <div class="scroll"><div class="chat-list" id="chat"></div></div>
-        <form class="composer" id="composer" autocomplete="off">
-          <button type="button" class="mic" id="mic" title="Hold a voice note (en-GB)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg>
-          </button>
-          <input id="input" placeholder="“Finished at Bright Bakery, four hours labour…”">
-          <button class="btn btn-primary btn-sm" type="submit">Send</button>
-        </form>
-      </section>
+  <div class="cols three">
+    <section class="panel" aria-labelledby="desk-title">
+      <div class="panel-head"><h2 id="desk-title">Assistant</h2></div>
+      <div class="scroll"><div class="chat" id="chat" aria-live="polite"></div></div>
+      <form class="composer" id="composer" autocomplete="off">
+        <button type="button" class="mic" id="mic" aria-label="Record a voice note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg>
+        </button>
+        <label class="sr" for="input">Message</label>
+        <input id="input" placeholder="Say what you did, or ask">
+        <button class="send" type="submit" aria-label="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+    </section>
 
-      <section class="col">
-        <div class="col-head"><span class="col-title">Invoices</span><span class="col-sub">Live from Stripe test mode</span></div>
-        <div class="board" id="board">
-          <div class="lane" data-lane="approval"><div class="lane-head"><span class="lane-title">Needs approval</span><span class="lane-total" data-total></span></div><div class="scroll"><div class="lane-body" data-body></div></div></div>
-          <div class="lane" data-lane="open"><div class="lane-head"><span class="lane-title">Open</span><span class="lane-total" data-total></span></div><div class="scroll"><div class="lane-body" data-body></div></div></div>
-          <div class="lane" data-lane="overdue"><div class="lane-head"><span class="lane-title">Overdue</span><span class="lane-total" data-total></span></div><div class="scroll"><div class="lane-body" data-body></div></div></div>
-          <div class="lane" data-lane="paid"><div class="lane-head"><span class="lane-title">Paid</span><span class="lane-total" data-total></span></div><div class="scroll"><div class="lane-body" data-body></div></div></div>
-        </div>
-      </section>
+    <section class="panel" aria-labelledby="inv-title">
+      <div class="panel-head"><h2 id="inv-title">Invoices</h2><span class="d-sub">Live from Stripe test mode</span></div>
+      <div class="approvals-strip" id="approvals"></div>
+      <div class="board" id="board">
+        <div class="lane" data-lane="open"><div class="lane-head"><span>Open</span><span class="lane-n" data-n></span></div><div class="lane-body" data-body></div></div>
+        <div class="lane" data-lane="overdue"><div class="lane-head"><span>Overdue</span><span class="lane-n" data-n></span></div><div class="lane-body" data-body></div></div>
+        <div class="lane" data-lane="paid"><div class="lane-head"><span>Paid</span><span class="lane-n" data-n></span></div><div class="lane-body" data-body></div></div>
+      </div>
+    </section>
 
-      <section class="col">
-        <div class="tabs" id="tabs">
-          <button class="tab on" data-tab="timeline">Decisions<span class="count" id="count-timeline">0</span></button>
-          <button class="tab" data-tab="mail">Inbox &amp; outbox<span class="count" id="count-mail">0</span></button>
-          <button class="tab" data-tab="memory">Memory<span class="count" id="count-memory">0</span></button>
-        </div>
+    <section class="panel side" aria-label="Activity, mail and memory">
+      <div class="seg" role="tablist" id="tabs">
+        <button role="tab" aria-selected="true" data-tab="activity">Decisions<span class="n" id="n-activity"></span></button>
+        <button role="tab" aria-selected="false" data-tab="mail">Mail<span class="n" id="n-mail"></span></button>
+        <button role="tab" aria-selected="false" data-tab="memory">Memory<span class="n" id="n-memory"></span></button>
+      </div>
+      <div class="pane" data-pane="activity">
+        <div class="scroll"><ul class="list" id="activity"></ul></div>
+      </div>
+      <div class="pane" data-pane="mail" hidden>
         <div class="scroll">
-          <div class="pane" data-pane="timeline" id="timeline"></div>
-          <div class="pane hidden" data-pane="mail">
-            <form class="inject" id="inject">
-              <div class="row"><span class="col-sub" style="flex:1">Simulate a customer email</span>
-                <select id="inject-from" style="width:auto"></select></div>
-              <textarea id="inject-body" placeholder="Please go ahead and invoice the extra 3 hours and the EICR."></textarea>
-              <div class="row"><input id="inject-subject" placeholder="Subject" style="flex:1;border:1px solid var(--line-strong);border-radius:4px;padding:7px 9px;font-size:13px">
-                <button class="btn btn-sm" type="submit">Send to inbox</button></div>
-            </form>
-            <div id="mail" style="display:flex;flex-direction:column;gap:10px"></div>
-          </div>
-          <div class="pane hidden" data-pane="memory">
-            <form class="ask" id="ask">
-              <div class="row"><select id="ask-cust" style="width:auto"></select><input id="ask-q" placeholder="Ask memory: did they promise a date?"></div>
-              <div id="ask-hits" style="display:grid;gap:6px"></div>
-            </form>
-            <div id="memory"></div>
-          </div>
+          <form class="card-form" id="inject">
+            <label>From customer<select id="inject-from"></select></label>
+            <label>Email<textarea id="inject-body" placeholder="Please go ahead and invoice the extra 3 hours and the EICR."></textarea></label>
+            <button class="btn neon sm" type="submit" style="justify-self:start">Deliver to inbox</button>
+          </form>
+          <ul class="list" id="mail"></ul>
         </div>
-      </section>
-    </div>
-  </main>
+      </div>
+      <div class="pane" data-pane="memory" hidden>
+        <div class="scroll">
+          <form class="card-form" id="ask">
+            <label>Customer<select id="ask-cust"></select></label>
+            <label>Ask memory<input id="ask-q" placeholder="Did they promise a date?"></label>
+            <div id="ask-hits" style="display:grid;gap:6px"></div>
+          </form>
+          <ul class="list" id="memory"></ul>
+        </div>
+      </div>
+    </section>
+  </div>
 </div>
 
-<dialog id="why">
-  <div class="dlg-head"><div class="dlg-q" id="why-q"></div><button class="btn btn-sm btn-ghost" id="why-close" style="margin-left:auto">Close</button></div>
-  <div class="dlg-body" id="why-body"></div>
-</dialog>
-<div class="toasts" id="toasts"></div>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" hidden>
+  <div class="drawer-head">
+    <div class="d-sub" id="drawer-title"></div>
+    <div class="grow"></div>
+    <button class="icon-btn" id="drawer-close" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+<div class="toasts" id="toasts" aria-live="polite"></div>
 
 <script>
   if (new URLSearchParams(location.search).has("mock")) document.write('<script src="mock.js"><\/script>');
