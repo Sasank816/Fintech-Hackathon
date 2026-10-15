@@ -272,3 +272,21 @@ body { overflow-x: hidden; }
 *::-webkit-scrollbar { display: none; width: 0; height: 0; }
 @media (max-width: 1100px) { .ribbon { opacity: .5; } }
 .wordmark { font-size: 28px; font-weight: 760; letter-spacing: -0.05em; line-height: 1; color: var(--ink); padding-bottom: 3px; }
+
+/* ---------- guided demo steps ---------- */
+.demo { display: flex; align-items: center; gap: 6px; padding: 0 0 14px; flex-wrap: wrap; }
+.demo-label { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-right: 4px; }
+.step { display: inline-flex; align-items: center; gap: 7px; border: 0; border-radius: var(--r-btn); padding: 6px 13px 6px 6px; font-size: 14px; background: var(--surface); color: var(--ink-2); white-space: nowrap; transition: background .15s; }
+.step:hover { background: var(--surface-2); }
+.step-n { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 600; background: #fff; color: var(--ink-2); }
+.step.done { color: var(--green); }
+.step.done .step-n { background: var(--neon-soft); color: var(--green); }
+.step.current { background: var(--ink); color: #fff; font-weight: 550; box-shadow: 0 0 0 4px var(--neon-soft); }
+.step.current .step-n { background: var(--neon); color: var(--ink); }
+.step:disabled { opacity: .6; cursor: progress; }
+.demo-keys { font-size: 13px; color: var(--muted); }
+kbd { font-family: var(--font); font-size: 12px; background: var(--surface); border-radius: 6px; padding: 1px 6px; border: 1px solid var(--line); }
+.demo { flex-wrap: nowrap; overflow-x: auto; }
+.msg .tile { background: var(--surface); }
+.app { grid-template-rows: auto auto auto minmax(0, 1fr); }
+.demo { padding: 4px 4px 14px; margin: -4px -4px 0; }

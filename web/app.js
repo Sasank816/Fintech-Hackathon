@@ -382,7 +382,7 @@ async function sendChat(message, mode = "text") {
   try {
     const res = await api("POST", "/api/chat", { message, mode });
     wait.classList.remove("wait");
-    const rows = (res.invoice_ids || []).map((id) => S.invoices.get(id)).filter(Boolean).map((inv) => invoiceRow(inv, true)).join("");
+    const rows = (res.invoice_ids || []).map((id) => S.invoices.get(id)).filter(Boolean).map((inv) => `<div style="margin-top:10px">${invoiceTile(inv).replace(/data-key="[^"]*"/, "")}</div>`).join("");
     wait.innerHTML = esc(res.reply) + rows;
   } catch (err) {
     wait.classList.remove("wait");
@@ -480,6 +480,73 @@ function showTab(name) {
 
 function closeMenu() { $("#menu").hidden = true; $("#menu-btn").setAttribute("aria-expanded", "false"); }
 
+
+/* ---------------- guided demo ---------------- */
+const isoPlus = (iso, days) => { const d = toDate(iso); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10); };
+const emailOf = (key) => (S.customers.get(key) || {}).email;
+const findInv = (key, kind = "work", pred = () => true) => [...S.invoices.values()].find((i) => i.customer === key && (i.kind || "work") === kind && pred(i));
+
+async function injectEmail(key, body, subject = "Re: invoice") {
+  const res = await api("POST", "/api/mail/inject", { from: emailOf(key), subject, body });
+  await refresh();
+  return res;
+}
+async function doAdvance(days) {
+  toast(`Skipping ahead ${days} days on the Stripe test clock…`);
+  const res = await api("POST", "/api/sim/advance", { days });
+  await refresh();
+  const n = ((res && res.decisions) || []).length;
+  toast(`${fmtDate(S.clock)}: ${n} decision${n === 1 ? "" : "s"} taken on their own`);
+}
+
+const DEMO = [
+  { label: "Voice note", run: () => sendChat("Just finished at Bright Bakery: four hours labour, two RCDs and the call-out.", "voice") },
+  { label: "Customer asks for a bill", run: async () => {
+      await injectEmail("acme", "Hi, thanks for Tuesday. Please go ahead and invoice the extra 3 hours and the EICR.", "Extra work on Tuesday");
+      showTab("mail"); toast("Acme's email arrived. VOIZ billed it with no human step.");
+  } },
+  { label: "Skip 45 days", run: async () => { await doAdvance(45); showTab("activity"); } },
+  { label: "Approve key account", run: async () => {
+      const d = [...S.decisions.values()].find((x) => x.status === "pending_approval");
+      if (!d) return toast("Nothing is waiting for approval");
+      await api("POST", `/api/approvals/${encodeURIComponent(d.id)}`, { approve: true, note: "" });
+      await refresh(); toast(`Approved: ${custName(d.customer)}`);
+  } },
+  { label: "Customer promises to pay", run: async () => {
+      await injectEmail("bright", `Sorry for the delay, we will pay by ${isoPlus(S.clock, 5)}.`);
+      showTab("activity"); toast("Promise recorded. Chasing paused (CC-4).");
+  } },
+  { label: "Customer pays", run: async () => {
+      const inv = findInv("acme", "work", (i) => i.status === "open" && i.total_pence === 480000) || findInv("acme", "work", (i) => i.status === "open");
+      if (!inv) return toast("No open Acme invoice to pay");
+      await api("POST", `/api/sim/pay/${encodeURIComponent(inv.id)}`);
+      await refresh();
+  } },
+  { label: "Why £93.18?", run: async () => {
+      const inv = findInv("acme", "interest");
+      if (!inv) return toast("No interest invoice yet: skip ahead first");
+      openDrawer("inv", inv.id);
+      await askWhy(`Why did you charge ${custName(inv.customer)} ${money(inv.total_pence)} on ${inv.number}?`, inv.customer);
+  } },
+];
+S.step = 0;
+
+function renderDemo() {
+  $("#demo").innerHTML = `<span class="demo-label" title="Press the right-arrow key for the next step">Demo</span>` + DEMO.map((st, i) => {
+    const cls = i < S.step ? "done" : i === S.step ? "current" : "";
+    return `<button class="step ${cls}" data-step="${i}" ${i === S.step ? 'aria-current="step"' : ""}><span class="step-n">${i < S.step ? "✓" : i + 1}</span>${esc(st.label)}</button>`;
+  }).join("") + `<span class="grow"></span>`;
+}
+
+let demoBusy = false;
+async function runStep(i) {
+  if (demoBusy || i < 0 || i >= DEMO.length) return;
+  demoBusy = true;
+  $$("#demo .step").forEach((b) => (b.disabled = true));
+  try { await DEMO[i].run(); S.step = Math.max(S.step, i + 1); } catch (err) { toast(err.message, "error"); }
+  finally { demoBusy = false; renderDemo(); }
+}
+
 /* ---------------- wiring ---------------- */
 function wire() {
   $("#composer").addEventListener("submit", (e) => { e.preventDefault(); const v = $("#input").value; $("#input").value = ""; sendChat(v, "text"); });
@@ -513,7 +580,7 @@ function wire() {
   $("#m-reset").addEventListener("click", () => {
     closeMenu();
     if (!confirm("Reset the demo? This wipes invoices, decisions and memory and starts a fresh Stripe test clock.")) return;
-    busy([], async () => { await api("POST", "/api/sim/reset"); Object.keys(shown).forEach((k) => delete shown[k]); hint(); closeDrawer(); await refresh(); toast("Demo reset"); });
+    busy([], async () => { await api("POST", "/api/sim/reset"); Object.keys(shown).forEach((k) => delete shown[k]); hint(); closeDrawer(); S.step = 0; renderDemo(); await refresh(); toast("Demo reset"); });
   });
 
   document.addEventListener("click", async (e) => {
@@ -560,6 +627,11 @@ function wire() {
     });
   });
 
+  $("#demo").addEventListener("click", (e) => { const b = e.target.closest("[data-step]"); if (b) runStep(Number(b.dataset.step)); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowRight" || e.target.closest("input, textarea, select") || !$("#drawer").hidden) return;
+    e.preventDefault(); runStep(S.step);
+  });
   $("#drawer-close").addEventListener("click", closeDrawer);
   $("#scrim").addEventListener("click", closeDrawer);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeDrawer(); closeMenu(); } });
@@ -568,6 +640,7 @@ function wire() {
 (async function boot() {
   wire();
   hint();
+  renderDemo();
   try { await refresh(); } catch (err) { toast(`Backend not reachable: ${err.message}`, "error"); }
   connect();
   S.ready = true;

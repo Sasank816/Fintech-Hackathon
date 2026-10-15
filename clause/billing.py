@@ -551,6 +551,7 @@ def reset(ctx) -> dict:
     ctx.store.reset()
     for k in keys:
         _forget(ctx, k)
+    ctx.memory_log.clear()  # the UI's memory feed starts empty after a reset
     seed(ctx)  # new run_id, clock at real now, customers + invoices
     ctx.emit("clock", {"clock_date": ctx.clock_date().isoformat()})
     return {"ok": True}

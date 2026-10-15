@@ -233,7 +233,10 @@ def build_ctx(settings: Settings, *, fake: bool = False) -> Ctx:
     mailer: Any = StubMailer()
     try:
         mail = importlib.import_module("clause.mail")
-        if not fake and settings.mail_mode == "gmail" and hasattr(mail, "GmailMailer"):
+        gmail_ready = bool(settings.gmail_address and settings.gmail_app_password)
+        if not fake and settings.mail_mode == "gmail" and not gmail_ready:
+            log.warning("MAIL_MODE=gmail but GMAIL_ADDRESS / GMAIL_APP_PASSWORD missing: using the outbox")
+        if not fake and settings.mail_mode == "gmail" and gmail_ready and hasattr(mail, "GmailMailer"):
             mailer = mail.GmailMailer(settings.gmail_address, settings.gmail_app_password)
         elif hasattr(mail, "OutboxMailer"):
             mailer = mail.OutboxMailer()
