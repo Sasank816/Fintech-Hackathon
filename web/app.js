@@ -66,6 +66,7 @@ const SOURCE = { voice: "Voice note", chat: "Chat", email: "Customer email", see
 
 function load(state) {
   S.business = state.business || "";
+  S.scenario = state.scenario || "full";
   S.clock = state.clock_date || null;
   S.modes = state.modes || {};
   S.customers = new Map((state.customers || []).map((c) => [c.id, c]));
@@ -78,6 +79,10 @@ function load(state) {
   S.memory = (state.memory_events || []).slice();
 }
 
+/* ---------------- demo focus: one customer, start to finish ---------------- */
+const FOCUS = "bright";
+const inFocus = (key) => S.scenario !== "demo" || key === FOCUS;
+
 /* ---------------- render ---------------- */
 let queued = false;
 function render() {
@@ -85,7 +90,7 @@ function render() {
   queued = true;
   requestAnimationFrame(() => {
     queued = false;
-    renderTop(); renderKpis(); renderBoard(); renderActivity(); renderMail(); renderMemory(); renderSelects();
+    renderTop(); renderDemo(); renderKpis(); renderBoard(); renderActivity(); renderMail(); renderMemory(); renderSelects();
     if (S.drawer) openDrawer(S.drawer.type, S.drawer.id, true);
     S.glow.clear();
   });
@@ -121,6 +126,7 @@ function setMoney(id, pence) {
 function renderKpis() {
   let outstanding = 0, overdue = 0, collected = 0, interest = 0;
   for (const inv of S.invoices.values()) {
+    if (!inFocus(inv.customer)) continue;
     if (inv.status === "open") { outstanding += remaining(inv); if (isOverdue(inv)) overdue += remaining(inv); }
     if (inv.status === "paid") collected += inv.total_pence || 0;
     if (inv.kind === "interest" && inv.status !== "void") interest += inv.total_pence || 0;
@@ -172,9 +178,9 @@ function renderBoard() {
   const board = $("#board");
   const before = new Map($$("[data-key]", board).map((el) => [el.dataset.key, el.getBoundingClientRect()]));
   const lanes = { open: [], overdue: [], paid: [] };
-  const pending = [...S.decisions.values()].filter((d) => d.status === "pending_approval").reverse();
+  const pending = [...S.decisions.values()].filter((d) => d.status === "pending_approval" && inFocus(d.customer)).reverse();
   $("#approvals").innerHTML = pending.map(approvalTile).join("");
-  for (const inv of [...S.invoices.values()].reverse()) { const st = stateOf(inv); if (lanes[st]) lanes[st].push(inv); }
+  for (const inv of [...S.invoices.values()].reverse().filter((i) => inFocus(i.customer))) { const st = stateOf(inv); if (lanes[st]) lanes[st].push(inv); }
   lanes.overdue.sort((a, b) => daysOverdue(b) - daysOverdue(a));
   const empty = { open: "No open invoices", overdue: "Nothing overdue", paid: "No payments yet" };
   for (const [name, items] of Object.entries(lanes)) {
@@ -195,7 +201,7 @@ function renderBoard() {
 
 const ACTOR_LABEL = { desk: "Desk", inbox: "Inbox", stripe: "Stripe", billing: "Billing", collections: "Collections", agent: "Collections", human: "You", system: "Setup" };
 function renderActivity() {
-  const items = [...S.decisions.values()].reverse();
+  const items = [...S.decisions.values()].reverse().filter((d) => inFocus(d.customer));
   $("#n-activity").textContent = items.length || "";
   $("#activity").innerHTML = items.map((d) => {
     const amt = decisionAmount(d);
@@ -210,7 +216,7 @@ function renderActivity() {
 }
 
 function renderMail() {
-  const items = [...S.mail.entries()].sort((a, b) => String(b[1].received_at || b[1].sent_at || "").localeCompare(String(a[1].received_at || a[1].sent_at || "")));
+  const items = [...S.mail.entries()].filter(([, m]) => inFocus(m.customer)).sort((a, b) => String(b[1].received_at || b[1].sent_at || "").localeCompare(String(a[1].received_at || a[1].sent_at || "")));
   $("#n-mail").textContent = items.length || "";
   $("#mail").innerHTML = items.map(([key, m]) => {
     const inbound = m.direction === "in";
@@ -225,9 +231,10 @@ function renderMail() {
 }
 
 function renderMemory() {
-  $("#n-memory").textContent = S.memory.length || "";
+  const mem = S.memory.filter((e) => inFocus(e.customer));
+  $("#n-memory").textContent = mem.length || "";
   const label = { remember: "Remembered", recall: "Recalled", improve: "Learned", forget: "Forgot" };
-  $("#memory").innerHTML = S.memory.slice().reverse().slice(0, 120).map((e) => `<li><div class="row" style="cursor:default">
+  $("#memory").innerHTML = mem.slice().reverse().slice(0, 120).map((e) => `<li><div class="row" style="cursor:default">
       ${avatar(e.customer, true)}
       <span style="min-width:0"><span class="row-title">${esc(label[e.op] || e.op)} · ${esc(custName(e.customer))}</span>
         <span class="row-sub clamp">${esc(e.detail)}</span></span>
@@ -500,30 +507,20 @@ async function doAdvance(days) {
 }
 
 const DEMO = [
-  { label: "Voice note", run: () => sendChat("Just finished at Bright Bakery: four hours labour, two RCDs and the call-out.", "voice") },
-  { label: "Customer asks for a bill", run: async () => {
-      await injectEmail("acme", "Hi, thanks for Tuesday. Please go ahead and invoice the extra 3 hours and the EICR.", "Extra work on Tuesday");
-      showTab("mail"); toast("Acme's email arrived. VOIZ billed it with no human step.");
-  } },
-  { label: "Skip 45 days", run: async () => { await doAdvance(45); showTab("activity"); } },
-  { label: "Approve key account", run: async () => {
-      const d = [...S.decisions.values()].find((x) => x.status === "pending_approval");
-      if (!d) return toast("Nothing is waiting for approval");
-      await api("POST", `/api/approvals/${encodeURIComponent(d.id)}`, { approve: true, note: "" });
-      await refresh(); toast(`Approved: ${custName(d.customer)}`);
-  } },
-  { label: "Customer promises to pay", run: async () => {
-      await injectEmail("bright", `Sorry for the delay, we will pay by ${isoPlus(S.clock, 5)}.`);
-      showTab("activity"); toast("Promise recorded. Chasing paused (CC-4).");
+  { label: "Voice note → invoice", run: () => sendChat("Just finished at Bright Bakery: four hours labour, two RCDs and the call-out.", "voice") },
+  { label: "Skip 45 days → overdue", run: async () => { await doAdvance(45); showTab("mail"); } },
+  { label: "Customer replies", run: async () => {
+      await injectEmail(FOCUS, `Sorry for the delay, we will pay by ${isoPlus(S.clock, 5)}.`);
+      showTab("activity"); toast("Promise recorded. Reminders paused (CC-4).");
   } },
   { label: "Customer pays", run: async () => {
-      const inv = findInv("acme", "work", (i) => i.status === "open" && i.total_pence === 480000) || findInv("acme", "work", (i) => i.status === "open");
-      if (!inv) return toast("No open Acme invoice to pay");
-      await api("POST", `/api/sim/pay/${encodeURIComponent(inv.id)}`);
+      const open = [...S.invoices.values()].filter((i) => i.customer === FOCUS && i.status === "open");
+      if (!open.length) return toast("Nothing open to pay");
+      for (const inv of open) await api("POST", `/api/sim/pay/${encodeURIComponent(inv.id)}`);
       await refresh();
   } },
-  { label: "Why £93.18?", run: async () => {
-      const inv = findInv("acme", "interest");
+  { label: "Why this interest?", run: async () => {
+      const inv = findInv(FOCUS, "interest");
       if (!inv) return toast("No interest invoice yet: skip ahead first");
       openDrawer("inv", inv.id);
       await askWhy(`Why did you charge ${custName(inv.customer)} ${money(inv.total_pence)} on ${inv.number}?`, inv.customer);
@@ -532,10 +529,25 @@ const DEMO = [
 S.step = 0;
 
 function renderDemo() {
+  if (S.scenario !== "demo") {
+    $("#demo").innerHTML = `<span class="demo-label">Demo</span><button class="step current" data-demo-start><span class="step-n">▶</span>Start demo: one customer, start to finish</button>`;
+    return;
+  }
   $("#demo").innerHTML = `<span class="demo-label" title="Press the right-arrow key for the next step">Demo</span>` + DEMO.map((st, i) => {
     const cls = i < S.step ? "done" : i === S.step ? "current" : "";
     return `<button class="step ${cls}" data-step="${i}" ${i === S.step ? 'aria-current="step"' : ""}><span class="step-n">${i < S.step ? "✓" : i + 1}</span>${esc(st.label)}</button>`;
-  }).join("") + `<span class="grow"></span>`;
+  }).join("") + `<span class="grow"></span><button class="linkbtn" data-demo-exit>Exit demo</button>`;
+}
+
+async function setScenario(scenario) {
+  await busy([], async () => {
+    toast(scenario === "demo" ? "Setting up a clean case study on Stripe…" : "Loading all customers and invoices…");
+    await api("POST", "/api/sim/reset", { scenario });
+    Object.keys(shown).forEach((k) => delete shown[k]);
+    S.step = 0; hint(); closeDrawer();
+    await refresh();
+    toast(scenario === "demo" ? "Demo ready: Bright Bakery, start to finish" : "Full view");
+  });
 }
 
 let demoBusy = false;
@@ -580,7 +592,7 @@ function wire() {
   $("#m-reset").addEventListener("click", () => {
     closeMenu();
     if (!confirm("Reset the demo? This wipes invoices, decisions and memory and starts a fresh Stripe test clock.")) return;
-    busy([], async () => { await api("POST", "/api/sim/reset"); Object.keys(shown).forEach((k) => delete shown[k]); hint(); closeDrawer(); S.step = 0; renderDemo(); await refresh(); toast("Demo reset"); });
+    busy([], async () => { await api("POST", "/api/sim/reset", { scenario: S.scenario || "full" }); Object.keys(shown).forEach((k) => delete shown[k]); hint(); closeDrawer(); S.step = 0; renderDemo(); await refresh(); toast("Demo reset"); });
   });
 
   document.addEventListener("click", async (e) => {
@@ -627,9 +639,14 @@ function wire() {
     });
   });
 
-  $("#demo").addEventListener("click", (e) => { const b = e.target.closest("[data-step]"); if (b) runStep(Number(b.dataset.step)); });
+  $("#demo").addEventListener("click", (e) => {
+    if (e.target.closest("[data-demo-start]")) return setScenario("demo");
+    if (e.target.closest("[data-demo-exit]")) return setScenario("full");
+    const b = e.target.closest("[data-step]");
+    if (b) runStep(Number(b.dataset.step));
+  });
   document.addEventListener("keydown", (e) => {
-    if (e.key !== "ArrowRight" || e.target.closest("input, textarea, select") || !$("#drawer").hidden) return;
+    if (e.key !== "ArrowRight" || S.scenario !== "demo" || e.target.closest("input, textarea, select") || !$("#drawer").hidden) return;
     e.preventDefault(); runStep(S.step);
   });
   $("#drawer-close").addEventListener("click", closeDrawer);

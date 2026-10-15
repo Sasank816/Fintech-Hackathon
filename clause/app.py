@@ -80,6 +80,7 @@ def create_app(ctx: Ctx, *, verify_keys: bool = True) -> FastAPI:
         return {
             "business": settings.business_name,
             "clock_date": ctx.clock_date().isoformat(),
+            "scenario": ctx.store.meta("scenario") or "full",
             "modes": {
                 "stripe": "test" if type(ctx.gateway).__name__ == "StripeGateway" else "fake",
                 "llm": ctx.llm.name,

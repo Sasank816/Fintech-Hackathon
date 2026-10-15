@@ -22,7 +22,7 @@ from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Body, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 
 from clause import policy
@@ -544,7 +544,8 @@ def _forget(ctx, key: str) -> None:
         log.warning("memory.forget(%s) failed: %s", key, e)
 
 
-def reset(ctx) -> dict:
+def reset(ctx, scenario: str = "full") -> dict:
+    """`full`: all demo customers with contract invoices. `demo`: one clean case study (no seeded invoices)."""
     from scripts.seed import seed
 
     keys = [c.get("id") or c.get("name") for c in ctx.store.all("customer")] or ["acme", "bright", "northwind"]
@@ -552,7 +553,8 @@ def reset(ctx) -> dict:
     for k in keys:
         _forget(ctx, k)
     ctx.memory_log.clear()  # the UI's memory feed starts empty after a reset
-    seed(ctx)  # new run_id, clock at real now, customers + invoices
+    seed(ctx, with_invoices=scenario != "demo")  # new run_id, clock at real now, customers (+ invoices)
+    ctx.store.set_meta("scenario", scenario)
     ctx.emit("clock", {"clock_date": ctx.clock_date().isoformat()})
     return {"ok": True}
 
@@ -575,5 +577,8 @@ def sim_pay(invoice_id: str, request: Request):
 
 
 @router.post("/api/sim/reset")
-def sim_reset(request: Request):
-    return reset(_ctx(request))
+def sim_reset(request: Request, body: dict = Body(default={})):
+    scenario = (body or {}).get("scenario", "full")
+    if scenario not in ("full", "demo"):
+        raise HTTPException(400, "scenario must be full or demo")
+    return reset(_ctx(request), scenario)

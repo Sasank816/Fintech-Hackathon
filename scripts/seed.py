@@ -26,7 +26,7 @@ SEED_INVOICES = [
 ]
 
 
-def seed(ctx, *, force: bool = True) -> dict:
+def seed(ctx, *, force: bool = True, with_invoices: bool = True) -> dict:
     """(Re)create the demo state. `force=False` is a no-op when already seeded."""
     from clause import billing
 
@@ -43,7 +43,7 @@ def seed(ctx, *, force: bool = True) -> dict:
         billing.ensure_customer(ctx, c["key"], c["name"], os.environ.get(c["env"]) or f"{c['key']}@example.com",
                                 **profile)
 
-    for s in SEED_INVOICES:
+    for s in (SEED_INVOICES if with_invoices else []):
         cust = ctx.store.get("customer", s["customer"])
         quote = f"{s['description']} (agreed contract, {cust['name']})"
         dec = ctx.record_decision(
