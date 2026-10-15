@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-KINDS = ("customer", "contract", "invoice", "email", "decision", "outbox", "meta")
+KINDS = ("customer", "contract", "invoice", "email", "decision", "outbox", "meta", "voice_note")
 
 
 def new_id(prefix: str) -> str:

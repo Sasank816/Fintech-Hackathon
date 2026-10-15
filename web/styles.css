@@ -145,6 +145,7 @@ a { color: var(--green); }
 .msg { max-width: 88%; padding: 11px 15px; border-radius: 20px; font-size: 15px; line-height: 1.45; white-space: pre-wrap; animation: rise .25s ease-out; }
 .msg.user { align-self: flex-end; background: var(--ink); color: #fff; border-bottom-right-radius: 6px; }
 .msg.user small { display: block; font-size: 12px; opacity: .7; }
+.msg.user .voice-prompt { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,.3); color: var(--neon); }
 .msg.agent { align-self: flex-start; background: #fff; border-bottom-left-radius: 6px; }
 .msg.agent.wait { color: var(--muted); }
 .msg .row { margin-top: 10px; background: var(--surface); padding: 10px; }

@@ -400,23 +400,51 @@ async function sendChat(message, mode = "text") {
   const wait = addMsg("agent", "Working on it…", "wait");
   S.pendingChat++;
   try {
-    const res = await api("POST", "/api/chat", { message, mode });
-    wait.classList.remove("wait");
-    const rows = (res.invoice_ids || []).map((id) => S.invoices.get(id)).filter(Boolean).map((inv) => `<div style="margin-top:10px">${invoiceTile(inv).replace(/data-key="[^"]*"/, "")}</div>`).join("");
-    wait.innerHTML = esc(res.reply) + rows;
+    showReply(wait, await api("POST", "/api/chat", { message, mode }));
   } catch (err) {
-    wait.classList.remove("wait");
-    wait.innerHTML = `<span style="color:var(--red)">${esc(err.message)}</span>`;
+    showError(wait, err);
   } finally { S.pendingChat--; }
 }
 
+function showReply(el, res) {
+  el.classList.remove("wait");
+  const rows = (res.invoice_ids || []).map((id) => S.invoices.get(id)).filter(Boolean).map((inv) => `<div style="margin-top:10px">${invoiceTile(inv).replace(/data-key="[^"]*"/, "")}</div>`).join("");
+  el.innerHTML = esc(res.reply) + rows;
+}
+
+function showError(el, err) {
+  el.classList.remove("wait");
+  el.innerHTML = `<span style="color:var(--red)">${esc(err.message)}</span>`;
+}
+
+/* The transcript shows in the input while you speak (browser speech API). Browsers without it record
+   the audio and the server transcribes it with Whisper. Either way /api/voice/prompt summarises the
+   note into one prompt for the desk; the chat shows the transcript, the prompt sent, and the reply. */
+async function sendVoice(transcript) {
+  transcript = transcript.trim();
+  if (!transcript) return;
+  if (window.MOCK) return sendChat(transcript, "voice");
+  const said = addMsg("user", `<small>Voice note</small>${esc(transcript)}`);
+  const wait = addMsg("agent", "Summarising your voice note…", "wait");
+  S.pendingChat++;
+  try {
+    const res = await api("POST", "/api/voice/prompt", { transcript });
+    if (res.summarised) said.insertAdjacentHTML("beforeend", `<div class="voice-prompt"><small>Prompt sent</small>${esc(res.prompt)}</div>`);
+    showReply(wait, res);
+  } catch (err) {
+    showError(wait, err);
+  } finally { S.pendingChat--; }
+}
+
+const micOn = (on) => { $("#mic").classList.toggle("on", on); $("#act-voice").classList.toggle("on", on); };
+
 let rec = null;
-function toggleVoice() {
+async function toggleVoice() {
   const R = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!R) { toast("Voice needs Chrome or Edge. Type instead.", "error"); $("#input").focus(); return; }
   if (rec) { rec.stop(); return; }
+  if (!R) return recordVoice();
   rec = new R();
-  rec.lang = "en-GB"; rec.interimResults = true; rec.continuous = false;
+  rec.lang = "en-GB"; rec.interimResults = true; rec.continuous = true;
   let finalText = "";
   rec.onresult = (e) => {
     let interim = "";
@@ -427,11 +455,44 @@ function toggleVoice() {
   };
   rec.onerror = (e) => { if (e.error !== "no-speech") toast(`Microphone: ${e.error}`, "error"); };
   rec.onend = () => {
-    $("#mic").classList.remove("on"); $("#act-voice").classList.remove("on"); rec = null;
+    micOn(false); rec = null;
     const text = $("#input").value.trim();
-    if (finalText.trim() && text) { $("#input").value = ""; sendChat(text, "voice"); }
+    if (finalText.trim() && text) { $("#input").value = ""; sendVoice(text); }
   };
-  $("#mic").classList.add("on"); $("#act-voice").classList.add("on");
+  micOn(true);
+  rec.start();
+}
+
+/* No speech API in this browser (e.g. Firefox): record, and let the server transcribe if it can. */
+async function recordVoice() {
+  const unsupported = () => { toast("Voice needs Chrome or Edge. Type instead.", "error"); $("#input").focus(); };
+  if (window.MOCK || !navigator.mediaDevices || !window.MediaRecorder) return unsupported();
+  try {
+    if (!(await api("GET", "/api/voice/status")).server_transcription) return unsupported();
+  } catch (_) { return unsupported(); }
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (err) { toast(`Microphone: ${err.message}`, "error"); return; }
+  const chunks = [];
+  rec = new MediaRecorder(stream);
+  rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+  rec.onstop = async () => {
+    const type = rec.mimeType || "audio/webm";
+    stream.getTracks().forEach((t) => t.stop());
+    micOn(false); rec = null;
+    const input = $("#input");
+    input.value = "Transcribing…"; input.disabled = true;
+    try {
+      const res = await fetch("/api/voice/transcribe", { method: "POST", headers: { "Content-Type": type }, body: new Blob(chunks, { type }) });
+      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      const { transcript } = await res.json();
+      input.value = "";
+      if (transcript) sendVoice(transcript); else toast("Didn't catch that", "error");
+    } catch (err) {
+      input.value = "";
+      toast(`Transcription: ${err.message}`, "error");
+    } finally { input.disabled = false; }
+  };
+  micOn(true);
   rec.start();
 }
 

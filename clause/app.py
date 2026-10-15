@@ -63,7 +63,7 @@ def create_app(ctx: Ctx, *, verify_keys: bool = True) -> FastAPI:
     app = FastAPI(title="Clause", lifespan=lifespan)
     app.state.ctx = ctx
 
-    for name in ("clause.billing", "clause.mail"):
+    for name in ("clause.billing", "clause.mail", "clause.voice"):
         mod = ctx.modules.get(name)
         if mod is not None and hasattr(mod, "router"):
             app.include_router(mod.router)

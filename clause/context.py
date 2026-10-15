@@ -25,7 +25,7 @@ from clause.store import Bus, Store, new_id, utcnow
 
 log = logging.getLogger("clause.context")
 
-FEATURE_MODULES = ("clause.billing", "clause.collections", "clause.mail", "clause.inbox", "clause.desk")
+FEATURE_MODULES = ("clause.billing", "clause.collections", "clause.mail", "clause.inbox", "clause.desk", "clause.voice")
 
 
 class StubMailer:
