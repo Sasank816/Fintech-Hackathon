@@ -239,8 +239,7 @@ def _execute_bill(ctx: Ctx, decision_id: str, customer_key: str, lines: list[dic
     try:
         subject, body = invoice_email(ctx, customer, inv, stripe_lines)
         outbox = ctx.run_action("mail.send_invoice_email", {
-            "customer_key": customer_key, "subject": subject, "body": body, "kind": "invoice",
-            "invoice_id": inv["id"], "decision_id": decision_id, "attach_invoice_pdf": True})
+            "invoice_id": inv["id"], "decision_id": decision_id, "subject": subject, "body": body})
     except Exception as exc:
         log.exception("sending invoice email failed")
         ctx.update_decision(decision_id, email_error=str(exc))

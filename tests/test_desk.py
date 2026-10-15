@@ -31,10 +31,14 @@ def ctx():
         inv["remaining_pence"] = inv["total_pence"]
         return ctx.store.put("invoice", inv["id"], inv)
 
-    def fake_send(ctx, **kw):
+    def fake_send(ctx, *, invoice_id, decision_id=None, subject=None, body=None):
+        # same signature as clause.mail.send_invoice_email
+        inv = ctx.store.get("invoice", invoice_id)
+        cust = ctx.store.get("customer", inv["customer"])
+        kw = {"invoice_id": invoice_id, "decision_id": decision_id, "subject": subject, "body": body}
         sent.append(kw)
-        cust = ctx.store.get("customer", kw["customer_key"])
-        return ctx.store.put("outbox", f"out_{len(sent)}", {**kw, "to": cust["email"], "mode": "outbox"})
+        return ctx.store.put("outbox", f"out_{len(sent)}", {**kw, "customer": inv["customer"], "to": cust["email"],
+                                                             "kind": "invoice", "mode": "outbox"})
 
     c.register_action("billing.raise_invoice", fake_raise)
     c.register_action("mail.send_invoice_email", fake_send)
@@ -60,7 +64,8 @@ def test_voice_note_bills_bright_bakery_from_the_rate_card(ctx):
     assert all(ln["evidence_quote"] for ln in ctx.raised[0]["lines"])
     assert ctx.raised[0]["decision_id"] == d["id"]
     assert d["invoice"] == res["invoice"]["id"] and d["stripe_ids"][0] == res["invoice"]["id"]
-    assert ctx.sent[0]["attach_invoice_pdf"] and "£361.00" in ctx.sent[0]["body"]
+    assert ctx.sent[0]["invoice_id"] == res["invoice"]["id"] and ctx.sent[0]["decision_id"] == d["id"]
+    assert "£361.00" in ctx.sent[0]["body"]
     assert res["invoice"]["hosted_invoice_url"] in ctx.sent[0]["body"]
     assert "£361.00" in res["reply"]
 
