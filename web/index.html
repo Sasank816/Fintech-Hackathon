@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clause · Accounts receivable</title>
+  <link rel="preload" href="fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6' fill='%2339FF88'/></svg>">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="frame">
+      <div class="brand"><span class="dot"></span>Clause</div>
+      <div class="business" id="business">Hollis Electrical Ltd</div>
+      <span class="pill-test" title="Every pound moves in Stripe test mode">Test mode</span>
+      <div class="modes" id="modes"></div>
+      <div class="spacer"></div>
+      <div class="clock">
+        <div>
+          <div class="clock-label">Stripe test clock</div>
+          <div class="clock-date" id="clock">—</div>
+        </div>
+        <button class="btn btn-sm" data-advance="15">+15 days</button>
+        <button class="btn btn-sm" data-advance="30">+30 days</button>
+        <button class="btn btn-sm btn-primary" data-advance="45">+45 days</button>
+      </div>
+      <button class="btn btn-sm btn-ghost" id="poll">Check inbox</button>
+      <button class="btn btn-sm btn-ghost" id="reset">Reset</button>
+    </div>
+    <div class="progress" id="progress"></div>
+  </header>
+
+  <section class="hero">
+    <div class="ribbon"></div>
+    <div class="frame">
+      <h1 class="headline"><b>Invoices from the work.</b> <span>Chases, charges statutory interest and explains every pound, on its own, inside your policy.</span></h1>
+      <div class="kpis">
+        <div class="kpi" id="kpi-outstanding"><div class="kpi-label"><i style="background:var(--blue-text)"></i>Outstanding</div><div class="kpi-value">£0.00</div></div>
+        <div class="kpi" id="kpi-overdue"><div class="kpi-label"><i style="background:var(--red-text)"></i>Overdue</div><div class="kpi-value">£0.00</div></div>
+        <div class="kpi" id="kpi-collected"><div class="kpi-label"><i style="background:var(--neon)"></i>Collected</div><div class="kpi-value">£0.00</div></div>
+        <div class="kpi" id="kpi-interest"><div class="kpi-label"><i style="background:var(--amber-text)"></i>Interest claimed</div><div class="kpi-value">£0.00</div></div>
+      </div>
+    </div>
+  </section>
+
+  <main class="main">
+    <div class="frame">
+      <section class="col">
+        <div class="col-head"><span class="col-title">Desk</span><span class="col-sub">Say or type the work. Ask anything.</span></div>
+        <div class="scroll"><div class="chat-list" id="chat"></div></div>
+        <form class="composer" id="composer" autocomplete="off">
+          <button type="button" class="mic" id="mic" title="Hold a voice note (en-GB)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg>
+          </button>
+          <input id="input" placeholder="“Finished at Bright Bakery, four hours labour…”">
+          <button class="btn btn-primary btn-sm" type="submit">Send</button>
+        </form>
+      </section>
+
+      <section class="col">
+        <div class="col-head"><span class="col-title">Invoices</span><span class="col-sub">Live from Stripe test mode</span></div>
+        <div class="board" id="board">
+          <div class="lane" data-lane="approval"><div class="lane-head"><span class="lane-title">Needs approval</span><span class="lane-total" data-total></span></div><div class="scroll"><div class="lane-body" data-body></div></div></div>
+          <div class="lane" data-lane="open"><div class="lane-head"><span class="lane-title">Open</span><span class="lane-total" data-total></span></div><div class="scroll"><div class="lane-body" data-body></div></div></div>
+          <div class="lane" data-lane="overdue"><div class="lane-head"><span class="lane-title">Overdue</span><span class="lane-total" data-total></span></div><div class="scroll"><div class="lane-body" data-body></div></div></div>
+          <div class="lane" data-lane="paid"><div class="lane-head"><span class="lane-title">Paid</span><span class="lane-total" data-total></span></div><div class="scroll"><div class="lane-body" data-body></div></div></div>
+        </div>
+      </section>
+
+      <section class="col">
+        <div class="tabs" id="tabs">
+          <button class="tab on" data-tab="timeline">Decisions<span class="count" id="count-timeline">0</span></button>
+          <button class="tab" data-tab="mail">Inbox &amp; outbox<span class="count" id="count-mail">0</span></button>
+          <button class="tab" data-tab="memory">Memory<span class="count" id="count-memory">0</span></button>
+        </div>
+        <div class="scroll">
+          <div class="pane" data-pane="timeline" id="timeline"></div>
+          <div class="pane hidden" data-pane="mail">
+            <form class="inject" id="inject">
+              <div class="row"><span class="col-sub" style="flex:1">Simulate a customer email</span>
+                <select id="inject-from" style="width:auto"></select></div>
+              <textarea id="inject-body" placeholder="Please go ahead and invoice the extra 3 hours and the EICR."></textarea>
+              <div class="row"><input id="inject-subject" placeholder="Subject" style="flex:1;border:1px solid var(--line-strong);border-radius:4px;padding:7px 9px;font-size:13px">
+                <button class="btn btn-sm" type="submit">Send to inbox</button></div>
+            </form>
+            <div id="mail" style="display:flex;flex-direction:column;gap:10px"></div>
+          </div>
+          <div class="pane hidden" data-pane="memory">
+            <form class="ask" id="ask">
+              <div class="row"><select id="ask-cust" style="width:auto"></select><input id="ask-q" placeholder="Ask memory: did they promise a date?"></div>
+              <div id="ask-hits" style="display:grid;gap:6px"></div>
+            </form>
+            <div id="memory"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<dialog id="why">
+  <div class="dlg-head"><div class="dlg-q" id="why-q"></div><button class="btn btn-sm btn-ghost" id="why-close" style="margin-left:auto">Close</button></div>
+  <div class="dlg-body" id="why-body"></div>
+</dialog>
+<div class="toasts" id="toasts"></div>
+
+<script>
+  if (new URLSearchParams(location.search).has("mock")) document.write('<script src="mock.js"><\/script>');
+</script>
+<script src="app.js"></script>
+</body>
+</html>
