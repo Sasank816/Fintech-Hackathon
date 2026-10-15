@@ -60,15 +60,19 @@ class LocalMemory:
         self.events.append(MemoryEvent("remember", customer, f"{kind} {ref}"))
 
     async def recall(self, customer: str, question: str) -> list[MemoryHit]:
-        words = {w for w in re.findall(r"[a-z0-9£.]+", question.lower()) if len(w) > 3}
+        # crude stemming: "promises" should find "Promised", "disputes" should find "disputed"
+        words = {w[:6] for w in re.findall(r"[a-z0-9£.]+", question.lower()) if len(w) > 3}
+        notes = self.notes.get(customer, [])
         scored = []
-        for note in self.notes.get(customer, []):
+        for i, note in enumerate(notes):
             score = sum(1 for w in words if w in note.lower())
             if score:
-                scored.append((score, note))
-        scored.sort(key=lambda t: -t[0])
+                scored.append((score, i, note))
+        scored.sort(key=lambda t: (-t[0], -t[1]))  # best match first, newest first on ties
         self.events.append(MemoryEvent("recall", customer, question))
-        return [MemoryHit(n, "local") for _, n in scored[:5]]
+        if not words:  # no usable keywords ("?"): show the latest notes
+            return [MemoryHit(n, "local") for n in notes[-5:][::-1]]
+        return [MemoryHit(n, "local") for _, _, n in scored[:5]]
 
     async def improve(self, customer: str, feedback: str) -> None:
         await self.remember(customer, "feedback", "human", feedback)
