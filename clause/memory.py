@@ -117,7 +117,9 @@ class CogneeMemory:
     async def remember(self, customer: str, kind: str, ref: str, text: str) -> None:
         note = memory_note(kind, ref, text)
         async with self._lock:
-            await self._cognee.remember(note, dataset_name=dataset_for(customer), node_set=[customer, kind])
+            # self-improvement runs explicitly in improve() (on human approvals), not on every write
+            await self._cognee.remember(note, dataset_name=dataset_for(customer), node_set=[customer, kind],
+                                        self_improvement=False)
         self.events.append(MemoryEvent("remember", customer, f"{kind} {ref}"))
 
     async def recall(self, customer: str, question: str) -> list[MemoryHit]:

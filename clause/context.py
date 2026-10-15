@@ -14,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import importlib
 import logging
+import os
 from dataclasses import dataclass, field
 from datetime import date
 from types import ModuleType
@@ -24,6 +25,9 @@ from clause.memory import LocalMemory, Memory, MemoryHit
 from clause.store import Bus, Store, new_id, utcnow
 
 log = logging.getLogger("clause.context")
+
+# Notes that only repeat a decision already remembered (the outbound email text, "invoice raised").
+SKIP_MEMORY_KINDS = {"email_out", "invoice"}
 
 FEATURE_MODULES = ("clause.billing", "clause.collections", "clause.mail", "clause.inbox", "clause.desk", "clause.voice")
 
@@ -93,6 +97,10 @@ class Ctx:
         return fut.result(timeout=timeout) if wait else fut
 
     def remember_later(self, customer: str, kind: str, ref: str, text: str) -> None:
+        if kind in SKIP_MEMORY_KINDS and self.memory.backend == "cognee":
+            return  # duplicates of a decision note; skipping them keeps Cognee's write queue short
+        text = text if len(text) <= 600 else text[:600].rsplit(" ", 1)[0] + " …"  # short notes keep memory writes fast
+
         async def go() -> None:
             try:
                 await self.memory.remember(customer, kind, ref, text)
@@ -225,7 +233,8 @@ def build_ctx(settings: Settings, *, fake: bool = False) -> Ctx:
         try:
             from clause.memory import CogneeMemory, configure_cognee_env
 
-            configure_cognee_env(settings.data_dir, settings.anthropic_api_key, f"anthropic/{settings.model}")
+            configure_cognee_env(settings.data_dir, settings.anthropic_api_key,  # memory writes use the fast model
+                                 "anthropic/" + (os.environ.get("COGNEE_MODEL") or "claude-haiku-5-5"))
             memory = CogneeMemory()
         except Exception as exc:
             log.warning("Cognee unavailable (%s): using LocalMemory", exc)
