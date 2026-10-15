@@ -1,0 +1,238 @@
+<!doctype html>
+<!-- Source of the README art. Every [data-asset] element becomes docs/readme/<name>-light.png and <name>-dark.png
+     (or <name>.png for data-single ones) via `python docs/readme/build.py`. Open with ?preview or ?preview&theme=dark to look. -->
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <title>voiz README art</title>
+  <link rel="stylesheet" href="../../web/styles.css">
+  <link rel="stylesheet" href="assets.css">
+  <script>
+    const q = new URLSearchParams(location.search);
+    if (q.get("theme") === "dark") document.documentElement.classList.add("dark");
+    if (q.has("preview")) document.documentElement.classList.add("preview");
+  </script>
+</head>
+<body>
+
+<!-- ============ hero ============ -->
+<section class="asset block card hero-card" data-asset="hero">
+  <div class="ribbon-art"></div>
+  <div class="hero-bar">
+    <span class="wordmark">voiz</span><span class="biz">Hollis Electrical Ltd</span>
+    <span class="grow"></span>
+    <span class="test">Test mode</span>
+    <span class="clock-pill"><small>Today</small>15 Oct 2026</span>
+  </div>
+  <div class="hero-copy">
+    <h1 class="hero-title"><span>Invoices from <span class="lit">your voice.</span></span><span>Collected by the law.</span><span>Every pound explained.</span></h1>
+    <p class="hero-sub">The accounts-receivable agent for UK small businesses. It bills from what you say, chases under the Late Payment Act, and shows the maths behind every pound.</p>
+  </div>
+  <div class="hero-foot">
+    <div class="facts">
+      <div class="fact"><div class="stat-label"><i style="background:var(--test)"></i>Stripe × Briefcase</div><b>London · 15 Oct 2026</b></div>
+      <div class="fact"><div class="stat-label"><i style="background:var(--neon)"></i>Track 02</div><b>Agents that collect</b></div>
+      <div class="fact"><div class="stat-label"><i style="background:var(--blue)"></i>Side quest</div><b>Cognee memory</b></div>
+    </div>
+    <div class="actions">
+      <span class="act primary"><span class="act-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg></span>Voice note</span>
+      <span class="act"><span class="act-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>Customer email</span>
+      <span class="act"><span class="act-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 7 6-7 6zM13 6l7 6-7 6z"/></svg></span>+45 days</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ four moves ============ -->
+<section class="asset block sheet" data-asset="moves">
+  <div class="moves">
+    <div class="move">
+      <div class="move-head"><span class="step-n">1</span><h3>Say what you did</h3><small>voice or email</small></div>
+      <div class="msg user"><small>Voice note</small>Just finished at Bright Bakery: four hours labour, two RCDs and the call-out.</div>
+      <div class="quote">“Please go ahead and invoice the extra 3 hours and the EICR.”</div>
+      <div class="chips"><span class="chip">Claude reads quantities</span><span class="chip">quotes required</span></div>
+    </div>
+    <div class="move">
+      <div class="move-head"><span class="step-n">2</span><h3>Priced in code, billed on Stripe</h3></div>
+      <div class="lines">
+        <div class="line"><span>Labour · 4 h × £60.00</span><span>£240.00</span></div>
+        <div class="line"><span>RCD supplied and fitted · 2 × £38.00</span><span>£76.00</span></div>
+        <div class="line"><span>Call-out · 1 × £45.00</span><span>£45.00</span></div>
+        <div class="line total"><span>Stripe test invoice + pay link, emailed</span><span>£361.00</span></div>
+      </div>
+      <div class="chips"><span class="chip auto">Auto</span><span class="chip auto">CC-1</span><span class="chip">rate card v2026-10</span></div>
+    </div>
+    <div class="move">
+      <div class="move-head"><span class="step-n">3</span><h3>Chased by the law</h3><small>45 days later</small></div>
+      <div class="ladder"><span><b>1 day</b>friendly</span><span><b>14 days</b>firm</span><span><b>30 days</b>final notice</span></div>
+      <div class="formula">£4,800.00 × 11.75% ÷ 365 × 15 days = £23.18<br>+ £70 compensation = <b>£93.18</b></div>
+      <div class="chips"><span class="chip auto">Auto</span><span class="chip auto">CC-2</span><span class="chip auto">CC-5</span><span class="chip">separate invoice</span></div>
+    </div>
+    <div class="move">
+      <div class="move-head"><span class="step-n">4</span><h3>Every pound explained</h3><small>ask “why?”</small></div>
+      <div class="msg user">Why did you charge Acme £93.18?</div>
+      <div class="answer">Statutory interest on Acme’s £4,800.00 invoice: 15 days at 11.75% is £23.18, plus £70 fixed compensation. CC-5 allows claims up to £250 automatically.</div>
+      <div class="chips"><span class="chip">decision ledger</span><span class="chip">Stripe IDs</span><span class="chip">customer memory</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Track 02 scorecard ============ -->
+<section class="asset block sheet" data-asset="scorecard">
+  <div class="sheet-head"><h2>Agents that collect</h2><span class="d-sub">how the 100 points split</span></div>
+  <div class="score-bar"><i style="flex:35;background:#B6FF3B"></i><i style="flex:25;background:var(--neon)"></i><i style="flex:20;background:#00E0C6"></i><i style="flex:20;background:var(--ink)"></i></div>
+  <div class="scores">
+    <div class="score"><div class="score-n">35<small>pts</small></div><h3><i class="dot" style="background:#B6FF3B"></i>Works end to end</h3><p>Voice note to a Stripe test invoice, paid by test card, moved to Paid by the webhook.</p></div>
+    <div class="score"><div class="score-n">25<small>pts</small></div><h3><i class="dot" style="background:var(--neon)"></i>Autonomy + control</h3><p>No human raises the bill. The written policy decides.</p></div>
+    <div class="score"><div class="score-n">20<small>pts</small></div><h3><i class="dot" style="background:#00E0C6"></i>Explains every pound</h3><p>Clause, quote, formula and Stripe IDs.</p></div>
+    <div class="score"><div class="score-n">20<small>pts</small></div><h3><i class="dot" style="background:var(--ink)"></i>Product + creativity</h3><p>One calm screen, voice in, UK law built in.</p></div>
+  </div>
+</section>
+
+<!-- ============ architecture ============ -->
+<section class="asset block sheet arch" data-asset="architecture">
+  <div class="sheet-head"><h2>Claude reads. Code prices.</h2><span class="d-sub">The policy decides. Stripe bills.</span></div>
+  <div class="arch-grid" id="arch">
+    <div class="node src" id="n-voice" style="grid-area:voice"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg></span><b>Voice note / chat</b><span class="sub">The owner says what they did</span></div>
+    <div class="node src" id="n-mail" style="grid-area:mail"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><b>Gmail inbox · IMAP</b><span class="sub">Customers’ emails and replies</span></div>
+    <div class="node" id="n-desk" style="grid-area:desk"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg></span><b>desk <em class="tag claude">Claude</em></b><span class="sub">Reads the work: quantities and quotes, never amounts</span></div>
+    <div class="node" id="n-inbox" style="grid-area:inbox"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></svg></span><b>inbox <em class="tag claude">Claude</em></b><span class="sub">bill me · promise · dispute · credit · injection</span></div>
+    <div class="node" id="n-rate" style="grid-area:rate"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span><b>Rate card <em class="tag code">code</em></b><span class="sub">Prices every line from data/ratecard.json</span></div>
+    <div class="node policy" id="n-policy" style="grid-area:policy"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></span><b>Policy CC-1…CC-8</b><span class="sub">POLICY.md as pure functions</span>
+      <div class="outs"><span class="chip auto">Auto</span><span class="chip needs_approval">Approval</span><span class="chip hold">On hold</span><span class="chip deny">Refused</span></div></div>
+    <div class="node" id="n-law" style="grid-area:law"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M8 20h8M5 8h14M5 8l-2.5 6a2.5 2.5 0 0 0 5 0zM19 8l-2.5 6a2.5 2.5 0 0 0 5 0z"/></svg></span><b>Late Payment Act <em class="tag code">code</em></b><span class="sub">8% + 3.75% = 11.75%, plus £40 / £70 / £100</span></div>
+    <div class="node" id="n-stripe" style="grid-area:stripe"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg></span><b>Stripe test mode</b><span class="sub">Invoices, credit notes, webhooks + 5 s poll</span></div>
+    <div class="node" id="n-collect" style="grid-area:collect"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><b>Collections</b><span class="sub">Test Clock tick: chase 1 / 14 / 30 days, claim interest</span></div>
+    <div class="node" id="n-ledger" style="grid-area:ledger"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="2.5"/><path d="M4 5.5v13c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5v-13M4 12c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5"/></svg></span><b>Ledger → Cognee</b><span class="sub">Clause, quote, maths and Stripe IDs per customer</span></div>
+    <div class="node" id="n-smtp" style="grid-area:smtp"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14M21 3l-6.5 18-4.5-7-7-4.5z"/></svg></span><b>Gmail · SMTP</b><span class="sub">Invoices with the pay link, reminders, final notices</span></div>
+    <div class="node src" id="n-ui" style="grid-area:ui"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg></span><b>voiz UI</b><span class="sub">Live over SSE, localhost:8000</span></div>
+  </div>
+  <svg class="wires" id="wires" aria-hidden="true"></svg>
+  <div class="legend"><span><i></i>The money path: from what was said to a Stripe invoice</span><span><i class="cold"></i>Data and decisions</span></div>
+</section>
+
+<!-- ============ golden numbers ============ -->
+<section class="asset block sheet" data-asset="golden">
+  <div class="sheet-head"><h2>Golden numbers</h2><span class="d-sub">tests/test_e2e.py asserts every one</span></div>
+  <div class="golden">
+    <div class="tile"><span class="tile-top" data-avatar="bright" data-name="Bright Bakery Co"><span class="tile-name">Bright Bakery Co</span></span><span class="tile-amt">£361.00</span><span class="tile-sub">Voice note → invoice</span><span class="st auto">Auto · CC-1</span></div>
+    <div class="tile"><span class="tile-top" data-avatar="acme" data-name="Acme Paper Ltd"><span class="tile-name">Acme Paper Ltd</span></span><span class="tile-amt">£360.00</span><span class="tile-sub">Customer email → invoice</span><span class="st auto">Auto · CC-1</span></div>
+    <div class="tile"><span class="tile-top" data-avatar="acme" data-name="Acme Paper Ltd"><span class="tile-name">Acme Paper Ltd</span></span><span class="tile-amt">£93.18</span><span class="tile-sub">Statutory interest, 15 days</span><span class="st auto">Auto · CC-5</span></div>
+    <div class="tile"><span class="tile-top" data-avatar="northwind" data-name="Northwind Logistics Ltd"><span class="tile-name">Northwind Logistics</span></span><span class="tile-amt">£39.81</span><span class="tile-sub">Contract-rate interest</span><span class="st needs_approval">Approval · CC-5, CC-8</span></div>
+  </div>
+</section>
+
+<!-- ============ demo strip ============ -->
+<div class="asset" data-asset="demo-steps" style="display:inline-block">
+  <nav class="demo-art">
+    <span class="demo-label">Demo</span>
+    <span class="step current"><span class="step-n">1</span>Voice note → invoice</span>
+    <span class="step"><span class="step-n">2</span>Skip 45 days → overdue</span>
+    <span class="step"><span class="step-n">3</span>Customer replies</span>
+    <span class="step"><span class="step-n">4</span>Customer pays</span>
+    <span class="step"><span class="step-n">5</span>Why this interest?</span>
+  </nav>
+</div>
+
+<!-- ============ chips (one variant: they read on light and dark) ============ -->
+<div>
+  <span class="asset inline chip-art" data-asset="chip-auto" data-single><span class="chip auto">Auto</span></span>
+  <span class="asset inline chip-art" data-asset="chip-approval" data-single><span class="chip needs_approval">Approval</span></span>
+  <span class="asset inline chip-art" data-asset="chips-auto-approval" data-single><span class="chip auto">Auto</span><span class="chip needs_approval">Approval</span></span>
+  <span class="asset inline chip-art" data-asset="chip-hold" data-single><span class="chip hold">On hold</span></span>
+  <span class="asset inline chip-art" data-asset="chip-refused" data-single><span class="chip deny">Refused</span></span>
+  <span class="asset inline chip-art" data-asset="chip-real" data-single><span class="chip real">Real</span></span>
+  <span class="asset inline chip-art" data-asset="chip-simulated" data-single><span class="chip">Simulated</span></span>
+</div>
+
+<!-- ============ the real UI ============ -->
+<section class="asset block window" data-asset="app" data-single>
+  <div class="window-bar"><i></i><i></i><i></i><span class="url">localhost:8000</span></div>
+  <img id="app-shot" alt="">
+</section>
+
+<!-- ============ footer ============ -->
+<section class="asset block card foot-card" data-asset="footer">
+  <div class="ribbon-art"></div>
+  <span class="wordmark">voiz</span>
+  <p><b>Invoices from your voice. Collected by the law.</b><br>Stripe × Briefcase hackathon · London · 15 Oct 2026</p>
+</section>
+
+<script>
+  // Avatars: the same colour hash as web/app.js, so customers look the same as on the board.
+  const PALETTE = [["#E6FFF0", "#00794A"], ["#EAF0FF", "#1F4FD1"], ["#FFF2D9", "#8F4200"], ["#FFECF1", "#B3093C"], ["#F1EAFF", "#5B2DB3"]];
+  function initials(name) {
+    const w = String(name).replace(/\b(ltd|limited|co|plc|llp)\b\.?/gi, "").trim().split(/\s+/);
+    return ((w[0] || "?")[0] + (w[1] ? w[1][0] : "")).toUpperCase();
+  }
+  document.querySelectorAll("[data-avatar]").forEach((el) => {
+    let h = 0;
+    for (const ch of el.dataset.avatar) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    const [bg, fg] = PALETTE[h % PALETTE.length];
+    el.insertAdjacentHTML("afterbegin", `<span class="avatar sm" style="background:${bg};color:${fg}">${initials(el.dataset.name)}</span>`);
+  });
+
+  // Architecture wires: orthogonal, rounded elbows, measured from the laid-out nodes.
+  const EDGES = [
+    ["voice", "b", "desk", "t", { hot: true }],
+    ["mail", "b", "inbox", "t"],
+    ["desk", "b", "rate", "t", { hot: true, label: "quantities", at: .5 }],
+    ["rate", "r", "policy", "l", { hot: true, label: "priced", at: .5, dy: -13 }],
+    ["law", "l", "policy", "r", { label: "interest", at: .5, dy: -13 }],
+    ["inbox", "l", "policy", "t", { label: "intent", at: .35 }],
+    ["policy", "b", "stripe", "t", { hot: true, label: "auto", at: .62 }],
+    ["policy", "b", "collect", "t"],
+    ["policy", "b", "ledger", "t"],
+    ["stripe", "b", "smtp", "t", { hot: true }],
+    ["collect", "b", "smtp", "t"],
+    ["ledger", "b", "ui", "t", { label: "why?", at: .5 }],
+  ];
+  function anchor(r, side) {
+    return side === "b" ? [r.x + r.w / 2, r.y + r.h] : side === "t" ? [r.x + r.w / 2, r.y]
+      : side === "l" ? [r.x, r.y + r.h / 2] : [r.x + r.w, r.y + r.h / 2];
+  }
+  function rounded(pts, rad) {
+    let d = `M${pts[0][0]},${pts[0][1]}`;
+    for (let i = 1; i < pts.length - 1; i++) {
+      const [px, py] = pts[i - 1], [x, y] = pts[i], [nx, ny] = pts[i + 1];
+      const r = Math.min(rad, Math.hypot(x - px, y - py) / 2, Math.hypot(nx - x, ny - y) / 2);
+      const ax = x - Math.sign(x - px) * r, ay = y - Math.sign(y - py) * r;
+      const bx = x + Math.sign(nx - x) * r, by = y + Math.sign(ny - y) * r;
+      d += ` L${ax},${ay} Q${x},${y} ${bx},${by}`;
+    }
+    const [lx, ly] = pts[pts.length - 1];
+    return d + ` L${lx},${ly}`;
+  }
+  function drawWires() {
+    const host = document.querySelector(".arch"), svg = document.getElementById("wires");
+    const o = host.getBoundingClientRect();
+    const box = (id) => { const r = document.getElementById("n-" + id).getBoundingClientRect(); return { x: r.left - o.left, y: r.top - o.top, w: r.width, h: r.height }; };
+    const NS = "http://www.w3.org/2000/svg";
+    svg.innerHTML = `<defs>
+      <marker id="tip" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 9 5 1 9z" style="fill:var(--wire);stroke:none"/></marker>
+      <marker id="tip-hot" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1 9 5 1 9z" style="fill:var(--wire-hot);stroke:none"/></marker></defs>`;
+    for (const [a, sa, b, sb, opt = {}] of EDGES) {
+      const A = box(a), B = box(b);
+      let [x1, y1] = anchor(A, sa), [x2, y2] = anchor(B, sb);
+      if (sa === "b" && sb === "t" && x1 > B.x + 24 && x1 < B.x + B.w - 24) x2 = x1;   // drop straight in when it lands on the node
+      y2 -= sb === "t" ? 1 : 0;
+      x2 += sb === "r" ? 1 : sb === "l" ? -1 : 0;
+      let pts;
+      if (sa === "b" && sb === "t") pts = x1 === x2 ? [[x1, y1], [x2, y2]] : [[x1, y1], [x1, (y1 + y2) / 2], [x2, (y1 + y2) / 2], [x2, y2]];
+      else if ("lr".includes(sa) && "lr".includes(sb)) pts = Math.abs(y1 - y2) < 1 ? [[x1, y1], [x2, y1]] : [[x1, y1], [(x1 + x2) / 2, y1], [(x1 + x2) / 2, y2], [x2, y2]];
+      else pts = [[x1, y1], [x2, y1], [x2, y2]];                                       // one elbow: across, then down
+      const p = document.createElementNS(NS, "path");
+      p.setAttribute("d", rounded(pts, 12));
+      if (opt.hot) p.setAttribute("class", "hot");
+      p.setAttribute("marker-end", `url(#${opt.hot ? "tip-hot" : "tip"})`);
+      svg.appendChild(p);
+      if (opt.label) {
+        const at = p.getPointAtLength(p.getTotalLength() * (opt.at ?? .5));
+        host.insertAdjacentHTML("beforeend", `<span class="wire-label ${opt.hot ? "hot" : ""}" style="left:${at.x}px;top:${at.y + (opt.dy || 0)}px">${opt.label}</span>`);
+      }
+    }
+  }
+
+  document.fonts.ready.then(() => requestAnimationFrame(() => { drawWires(); window.__ready = true; }));
+</script>
+</body>
+</html>
