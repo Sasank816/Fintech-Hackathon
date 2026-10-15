@@ -62,6 +62,51 @@ def billing(contract_amount_pence: int, invoice_amount_pence: int, terms_days: i
         f"Signed contract received; invoice equals contract amount; terms {terms_days} days"])
 
 
+AUTO_BILL_CAP_PENCE = 150_000
+MAX_LINE_QUANTITY = 40
+DUPLICATE_WINDOW_DAYS = 7
+
+
+def billing_from_work(*, customer_identified: bool, customer_known: bool, lines: list[dict],
+                      total_pence: int, terms_days: int, injection_suspected: bool = False,
+                      duplicate_of: str | None = None) -> Verdict:
+    """Whether work reported by voice, chat or a customer's email may be invoiced automatically.
+
+    `lines` are priced by code from the rate card: each has `code`, `quantity` and `priced`
+    (False for a CUSTOM line the rate card cannot price).
+    """
+    if injection_suspected:
+        return Verdict(DENY, ["CC-7"], ["The message tried to instruct the agent; nothing was billed"])
+    if not customer_identified:
+        return Verdict(DENY, ["CC-1"], ["Could not tell which customer the work was for"])
+    if not lines:
+        return Verdict(DENY, ["CC-1"], ["No billable work found in the message"])
+    bad = [ln for ln in lines if ln["quantity"] <= 0]
+    if bad:
+        return Verdict(DENY, ["CC-1"], [f"Quantity must be positive ({bad[0]['code']}: {bad[0]['quantity']})"])
+    why = []
+    if not customer_known:
+        why.append("New customer: a human confirms who they are before the first invoice")
+    unpriced = [ln for ln in lines if not ln["priced"]]
+    if unpriced:
+        why.append(f"{len(unpriced)} line(s) not on the rate card, so the agent cannot price them")
+    big = [ln for ln in lines if ln["quantity"] > MAX_LINE_QUANTITY]
+    if big:
+        why.append(f"Quantity {big[0]['quantity']} for {big[0]['code']} is over {MAX_LINE_QUANTITY}")
+    if total_pence > AUTO_BILL_CAP_PENCE:
+        why.append(f"Total £{total_pence / 100:,.2f} is over the £{AUTO_BILL_CAP_PENCE / 100:,.2f} auto limit")
+    if terms_days > MAX_TERMS_DAYS:
+        why.append(f"Payment terms of {terms_days} days exceed {MAX_TERMS_DAYS} days")
+    if duplicate_of:
+        why.append(f"Looks like a duplicate of {duplicate_of} raised in the last {DUPLICATE_WINDOW_DAYS} days")
+    if why:
+        return Verdict(NEEDS_APPROVAL, ["CC-1", "CC-8"], why)
+    return Verdict(AUTO, ["CC-1"], [
+        "Known customer; every line priced from the rate card",
+        f"Total £{total_pence / 100:,.2f} is within the £{AUTO_BILL_CAP_PENCE / 100:,.2f} auto limit",
+        f"Terms {terms_days} days"])
+
+
 @dataclass
 class InvoiceStanding:
     """Everything the collections policy needs to know about one open invoice on one day."""

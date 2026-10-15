@@ -5,7 +5,7 @@ The agent enforces this policy. It **cannot edit it**. The numbers below are the
 
 | ID | Clause |
 |---|---|
-| **CC-1 Billing** | When a signed contract arrives, the agent raises the invoice itself. The amount must equal the contract amount. Payment terms come from the contract. Terms longer than **60 days** need human approval. With no stated terms, the statutory default of **30 days** applies. |
+| **CC-1 Billing** | The agent raises invoices itself from evidence of work: an owner's voice note or message, a customer's email asking to be billed, or a signed contract. **Nobody types an amount.** Every line is priced in code, either from the rate card (`data/ratecard.json`) or at the signed contract amount. The model only reads quantities and quotes the words that justify each line. An invoice goes out automatically when the customer is known, every line is priced, each quantity is at most **40**, the total is at most **£1,500.00**, and no similar invoice was raised in the last **7 days**. A new customer, an unpriced line, a larger total, or a possible duplicate needs human approval. Terms longer than **60 days** need human approval. With no stated terms, the statutory default of **30 days** applies. |
 | **CC-2 Chasing** | Chase overdue invoices at **1, 14 and 30 days** overdue: friendly, then firm, then final notice. Never chase the same invoice twice within **7 days**. |
 | **CC-3 Disputes** | If a customer disputes an invoice in writing, stop chasing it and stop all interest on it until a human resolves the dispute. Escalate every dispute to a human. |
 | **CC-4 Promises** | If a customer promises to pay by a date, pause chasing until that date plus **1 day** of grace. A broken promise resumes chasing and allows interest. |
